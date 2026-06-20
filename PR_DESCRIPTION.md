@@ -50,6 +50,7 @@ No consumers exist (no versioning/client/contract in-repo) and the brief directs
 - Rejected an `(owner_id, created_at, id)` index — unjustified, since `/users/:id` is unpaginated and the baseline owner index + a tiny sort suffices.
 - `/users/:userId/resources` remains unpaginated (pre-existing contract); pagination is a future enhancement.
 - Auth is the provided stub; `requireUser` accepts loose numeric header coercions (gated by a real DB lookup). A real auth layer would parse stricter.
+- **Test layout kept as a single file.** I tried splitting the suite into per-concern files, but at this size the extra files + shared-setup wiring made review harder, not easier, so I kept one `test/resources.test.ts`. Captured as a backlog/tech-debt task: establish a scalable test pattern (`globalSetup` + fixtures) before the suite grows (see README).
 
 - **Process trade-off — no spec-driven workflow.** To stay inside the ~2h window I deliberately skipped the spec-driven development workflow I normally use with agents (driving the work from a formal written spec the agent implements against). For a task this small the overhead outweighed the benefit, so I steered design decisions interactively and reviewed each step instead.
 - **Single agent session, by design.** I did all of the work in one assistant session so it kept full context across both tasks and the review cycles. That works well here precisely because the codebase is small — little risk of the context filling with irrelevant material and degrading results. On a larger codebase I'd deliberately compartmentalize across sessions/agents to avoid that.
@@ -57,4 +58,5 @@ No consumers exist (no versioning/client/contract in-repo) and the brief directs
 ## Open questions
 - For `/users/:userId/resources`, the chosen behavior is the *uniform* access rule (member sees only shared-with-them), not a flat 403/404 — confirm that matches product intent.
 - Should `/users/:userId/resources` and `/resources/recent` adopt the same pagination envelope as `/resources` for consistency?
+
 

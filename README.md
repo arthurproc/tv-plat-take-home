@@ -166,6 +166,14 @@ params rejected). One small dependency; clear error messages.
 - **Stricter auth / real authentication** in place of the header stub.
 - A `CHECK` constraint or enum for `type`/`status` if the product fixes their
   domains.
+- **Backlog / tech debt — a scalable test layout.** The suite is a single
+  `test/resources.test.ts`. I tried splitting it into per-concern files, but at
+  this size the extra files plus the shared-setup wiring (each file re-seeds and
+  manages its own pool) made the suite *harder* to review, not easier — so I
+  deliberately kept one file. Before the suite grows, a dedicated task should
+  establish a scalable pattern first: a `globalSetup` for one-time
+  migrate/seed + pool teardown and shared fixtures, so splitting into
+  per-domain files adds clarity instead of overhead.
 
 ## Things I'm unsure about
 
