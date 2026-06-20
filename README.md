@@ -138,6 +138,22 @@ params rejected). One small dependency; clear error messages.
   query, but `/users/:userId/resources` is unpaginated and the baseline owner
   index plus a tiny sort already suffices. Avoided the unjustified write cost.
 
+## Scope & process trade-offs
+
+- **~2h time-box.** Kept strictly to the two tasks and didn't gold-plate. The
+  code/scope trade-offs are above (rejected index, unpaginated `/users/:id`, the
+  `UNION` rewrite deferred to future work).
+- **No spec-driven workflow.** I deliberately skipped the spec-driven development
+  workflow I normally use with agents (driving the work from a formal written
+  spec the agent implements against) to stay inside the window. For a task this
+  small the overhead outweighed the benefit, so I steered the design decisions
+  interactively and reviewed each step instead.
+- **Single agent session, by design.** I did all the work in one assistant
+  session so it retained full context across both tasks and the review cycles.
+  That works well here precisely because the codebase is small — little risk of
+  the context filling with irrelevant material and degrading output. On a larger
+  codebase I'd deliberately compartmentalize across sessions/agents to avoid that.
+
 ## What I'd do with more time
 
 - **`UNION` rewrite for low-selectivity viewers.** The scoped list's worst case
