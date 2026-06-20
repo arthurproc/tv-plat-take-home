@@ -9,6 +9,14 @@ export interface Cursor {
   id: string; // bigint id of that row, as a string
 }
 
+// The authenticated caller, on whose behalf the query runs. Passed explicitly
+// (and required) so access scoping can never be forgotten by a caller — see
+// findResources.
+export interface Viewer {
+  id: number;
+  isAdmin: boolean;
+}
+
 export interface FindResourcesOpts {
   ownerId?: number;
   type?: string;
@@ -46,15 +54,34 @@ export interface FindResourcesResult {
 
 // SHARED PATH — used by multiple endpoints. Changing this affects all callers.
 //
+// `viewer` is REQUIRED: every caller must say who is asking, so access scoping
+// can never be silently omitted (the type system enforces it). A non-admin sees
+// only resources they own or that are explicitly shared with them; an admin
+// bypasses scoping entirely.
+//
 // Rows are ALWAYS ordered newest-first by (created_at DESC, id DESC). `id` is a
 // unique tiebreaker, which is what makes keyset pagination correct even when two
 // rows share a created_at. Ordering is fixed here (not caller-supplied) so no
 // request input can ever be interpolated into the ORDER BY clause.
 export async function findResources(
+  viewer: Viewer,
   opts: FindResourcesOpts = {},
 ): Promise<FindResourcesResult> {
   const params: unknown[] = [];
   const conditions: string[] = [];
+
+  // Access scoping. Admins bypass; everyone else is limited to resources they
+  // own OR that are explicitly shared with them. Both halves reference the same
+  // viewer id parameter.
+  if (!viewer.isAdmin) {
+    params.push(viewer.id);
+    conditions.push(
+      `(owner_id = $${params.length} OR EXISTS (
+         SELECT 1 FROM resource_shares s
+         WHERE s.resource_id = resources.id AND s.user_id = $${params.length}
+       ))`,
+    );
+  }
 
   if (opts.ownerId !== undefined) {
     params.push(opts.ownerId);
